@@ -9,6 +9,10 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
+# allure
+.allure/
+allure-report/
+allure-results/
 
 ### SublimeText template
 # cache files for sublime text
