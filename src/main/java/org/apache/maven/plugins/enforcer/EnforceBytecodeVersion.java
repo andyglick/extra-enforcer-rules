@@ -75,15 +75,23 @@ public class EnforceBytecodeVersion
         JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.7", 51 );
         JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "7", 51 );
         // Java8
-        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.8", 52 );
         JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "8", 52 );
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.8", 52 );
         // Java9
-        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.9", 53 );
         JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "9", 53 );
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.9", 53 );
 
         // Java10
-        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.10", 54 );
         JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "10", 54 );
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.10", 54 );
+
+        // Java11
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "11", 55 );
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.11", 55 );
+
+        // Java 12
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "12", 56 );
+        JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.put( "1.12", 56 );
     }
 
     static String renderVersion( int major, int minor )
@@ -141,6 +149,12 @@ public class EnforceBytecodeVersion
      * Optional list of dependency scopes to ignore. {@code test} and {@code provided} make sense here.
      */
     private String[] ignoredScopes;
+
+    /**
+     * Ignore all dependencies which have {@code &lt;optional&gt;true&lt;/optional&gt;}.
+     * @since 1.2
+     */
+    private boolean ignoreOptionals = false;
 
     private List<IgnorableDependency> ignorableDependencies = new ArrayList<IgnorableDependency>();
 
@@ -200,7 +214,8 @@ public class EnforceBytecodeVersion
             Integer needle = JDK_TO_MAJOR_VERSION_NUMBER_MAPPING.get( maxJdkVersion );
             if ( needle == null )
             {
-                throw new IllegalArgumentException( "Unknown JDK version given. Should be something like \"1.7\"" );
+                throw new IllegalArgumentException( "Unknown JDK version given. Should be something like " +
+                        "\"1.7\", \"8\", \"11\", \"12\"" );
             }
             maxJavaMajorVersionNumber = needle;
         }
@@ -390,7 +405,7 @@ public class EnforceBytecodeVersion
      */
     private Set<Artifact> filterArtifacts( Set<Artifact> dependencies )
     {
-        if ( includes == null && excludes == null && ignoredScopes == null )
+        if ( includes == null && excludes == null && ignoredScopes == null && ignoreOptionals == false )
         {
             return dependencies;
         }
@@ -409,6 +424,10 @@ public class EnforceBytecodeVersion
         for ( Artifact artifact : dependencies )
         {
             if ( ignoredScopes != null && Arrays.asList( ignoredScopes ).contains( artifact.getScope() ) )
+            {
+                continue;
+            }
+            if ( ignoreOptionals && artifact.isOptional() )
             {
                 continue;
             }

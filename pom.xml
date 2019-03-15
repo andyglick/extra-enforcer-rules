@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>extra-enforcer-rules</artifactId>
-  <version>1.0-beta-10-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
 
   <name>Extra Enforcer Rules</name>
 
@@ -82,7 +82,7 @@
     <enforcerApiVersion>1.0</enforcerApiVersion>
     <enforcerPluginVersion>1.4</enforcerPluginVersion>
     <maven.version>2.0.9</maven.version>
-    <mojo.java.target>1.5</mojo.java.target>
+    <mojo.java.target>1.6</mojo.java.target>
     <scmpublish.content>target/staging/${project.artifactId}</scmpublish.content>
   </properties>
 
@@ -147,6 +147,22 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -187,6 +203,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
+        <version>3.1.0</version>
         <configuration>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <showErrors>true</showErrors>
@@ -195,6 +212,10 @@
           <preBuildHookScript>setup</preBuildHookScript>
           <postBuildHookScript>verify</postBuildHookScript>
           <addTestClassPath>true</addTestClassPath>
+          <properties>
+            <!-- e.g. ensure that Java7 picks up TLSv1.2 when connecting with Central -->
+            <https.protocols>TLSv1.2</https.protocols>
+          </properties>
           <filterProperties>
             <enforcerPluginVersion>${enforcerPluginVersion}</enforcerPluginVersion>
           </filterProperties>
@@ -220,8 +241,21 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-invoker-plugin</artifactId>
-          <version>1.10</version>
+          <version>3.0.1</version>
         </plugin>
       </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <id>java12</id>
+      <activation>
+        <jdk>[12,)</jdk>
+      </activation>
+      <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.release>7</maven.compiler.release>
+      </properties>
+    </profile>
+  </profiles>
 </project>
